@@ -25,9 +25,8 @@ modules:
         properties:
           srv-url: ${default-url}
     requires:
-      []
+      - name: DispatcherService-auth
       # - name: DispatcherService-db
-
   # - name: DispatcherService-db-deployer
   #   type: hdb
   #   path: gen/db
@@ -37,7 +36,19 @@ modules:
   #     - name: DispatcherService-db
 
 resources:
-  []
+  - name: DispatcherService-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: DispatcherService-${org}-${space}
+        tenant-mode: dedicated
+        oauth2-configuration:
+          credential-types:
+            - "binding-secret"
+            - "x509"
   # - name: DispatcherService-db
   #   type: com.sap.xs.hdi-container
   #   parameters:

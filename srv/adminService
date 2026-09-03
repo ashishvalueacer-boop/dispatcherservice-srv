@@ -1,0 +1,18 @@
+const cds = require("@sap/cds");
+const { SELECT } = require("@sap/cds/lib/ql/cds-ql");
+const fs = require('fs').promises;
+const path = require('path');
+const { json } = require("stream/consumers");
+
+
+class AdminService extends cds.ApplicationService {
+    async init() {
+        // this.on("getAllTables", async (req) => {
+        //     const db = await cds.connect.to("db");
+        //     const tables = await db.run(SELECT.from("sqlite_master").where({ type: 'table' }));
+        //     return tables.map(table => table.name);
+        // });
+    }};
+
+module.exports = AdminService;
+        

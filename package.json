@@ -1,23 +1,24 @@
 {
   "name": "DispatcherService",
   "version": "1.0.0",
-  "type": "module",
   "dependencies": {
-    "@cap-js/sqlite": "^3",
-    "@sap/cds": "^10"
+    "@sap/cds": "^10",
+    "@sap/xssec": "^4.15.0",
+    "cors": "^2.8.6"
   },
-  "devDependencies": {    
+  "devDependencies": {
     "@sap/cds-dk": "^10"
   },
   "scripts": {
-    "start": "cds-serve"
+    "start": "cds-serve",
+    "build:mta": "npx mbt build -t gen --mtar mta.tar"
   },
+  "private": true,
   "cds": {
     "requires": {
-      "db": {
-        "kind": "sqlite"
+      "[production]": {
+        "auth": "mocked"
       }
     }
-  },
-  "private": true
+  }
 }

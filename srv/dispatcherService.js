@@ -1,10 +1,17 @@
 
-import cds from "@sap/cds";
+const cds = require('@sap/cds');
+const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
+const { getDestination } = require('@sap-cloud-sdk/connectivity');
 
-// const { SELECT } = require("@sap/cds/lib/ql/cds-ql");
 
 class DispatcherService extends cds.ApplicationService {
+
     async init() {
+
+        let destination = await getDestination({
+            destinationName: 'Destination_Driver_Assignment_Iflows'
+        });
+
         // this.on("getAllTables", async (req) => {
         //     const db = await cds.connect.to("db");
         //     const tables = await db.run(SELECT.from("sqlite_master").where({ type: 'table' }));
@@ -32,6 +39,404 @@ class DispatcherService extends cds.ApplicationService {
             const orderDetails = freightOrders.find(order => order.id === foId);
             return orderDetails ? [orderDetails] : [];
         });
+
+        this.on("GetBulkfo", async (req) => {
+
+            let destination = await getDestination({
+                destinationName: 'Destination_Driver_Assignment_Iflows'
+            });
+
+            const {
+                p_start_time = "2026-09-01T07:00:00Z",
+                p_end_time = "2026-09-30T13:00:00Z",
+                p_dc = "0017411710",
+                p_carrier = "0001000109"
+            } = req.data;
+
+            try {
+
+                let iflowUrl = "";
+                iflowUrl = "/http/fo-bulk";
+
+                // console.log("My Destination: V1", JSON.stringify(destination));
+                // console.log("My iFlow URL: V1", iflowUrl);
+
+
+                const requestConfig = {
+                    method: "GET",
+                    url: iflowUrl,
+                    params: {
+                        p_start_time: p_start_time,
+                        p_end_time: p_end_time,
+                        p_dc: p_dc,
+                        p_carrier: p_carrier
+                    }
+                };
+
+                console.log("My Request Config V1:", JSON.stringify(requestConfig, null, 2));
+
+
+                const response = await executeHttpRequest(destination, requestConfig);
+
+                // console.log("My Status v1:", response.status);
+                // console.log("My Headers v1:", response.headers);
+                // console.log("My Data v1:", JSON.stringify(response.data.freightOrders, null, 2));             
+
+
+                const freightOrdersData = response.data.freightOrders;
+                console.log("My Final Parsed Data v1:", freightOrdersData);
+                console.log("Records Found:", freightOrdersData.length);
+
+                const freightOrders = freightOrdersData.map(item => ({
+
+                    id: item.transportationOrder || "N/A",
+
+                    startDate: item.startTime ? item.startTime.split("T")[0] : "",
+
+                    startTime: item.startTime ? item.startTime.split("T")[1]?.replace("Z", "") : "",
+
+                    endDate: item.endTime ? item.endTime.split("T")[0] : "",
+
+                    endTime: item.endTime ? item.endTime.split("T")[1]?.replace("Z", "") : "",
+
+                    driver_id: item.hasOwnProperty("driver_id") ? item.driver_id : "UNASSIGNED",
+
+                    vehid: item.hasOwnProperty("veh_regno") ? item.veh_regno : "NO_VEHICLE",
+
+                    status: item.hasOwnProperty("status") ? item.status : "Unassigned",
+
+                    carrier: item.hasOwnProperty("carrier") ? item.carrier : "UNKNOWN",
+
+                    distance: item.hasOwnProperty("distance") ? item.distance : "10",
+
+                    priority: item.hasOwnProperty("priority") ? item.priority : "MEDIUM",
+
+                    mode: item.hasOwnProperty("mode") ? item.mode : "ROAD",
+
+                    weight: item.hasOwnProperty("weight") ? item.weight : "10",
+
+                    from: item.hasOwnProperty("from") ? item.from : "UNKNOWN",
+
+                    to: item.hasOwnProperty("to") ? item.to : "UNKNOWN"
+
+                })) || [];
+
+                console.log("My freightOrders data:", freightOrders);
+
+                let DispatchedData = [];
+
+                for (const d of freightOrders || []) {
+
+                    DispatchedData.push({
+                        id: d.id,
+                        priority: d.priority,
+                        driver_id: d.driver_id,
+                        startDate: d.startDate,
+                        endDate: d.endDate,
+                        startTime: d.startTime,
+                        endTime: d.endTime,
+                        Vehid: d.vehid,
+                        carrier: d.carrier
+                        // LastUpdate: new Date().toISOString()
+                    });
+                }               
+
+                // DispatchedData = freightOrders.map(d => ({
+                //     id: d.id,
+                //     priority: d.priority,
+                //     driver_id: d.driver_id,
+                //     startDate: d.startDate,
+                //     endDate: d.endDate,
+                //     startTime: d.startTime,
+                //     endTime: d.endTime,
+                //     Vehid: d.vehid,
+                //     carrier: d.carrier
+                // }));
+
+                
+
+                return DispatchedData;
+                
+
+            } catch (error) {
+
+                console.error("Error Message V1: ", error.message);
+                console.error("Error Response V1:", error.response?.data);
+                console.error("Error Status V1:", error.response?.status);
+                console.error("Full Error V1:", error);
+
+                req.error(
+                    500,
+                    `Error v1 calling CPI iFlow: ${error.message}`
+                );
+            }
+        });
+
+        this.on("GetBulkfoV", async (req) => {
+
+            let destination = await getDestination({
+                destinationName: 'Destination_Driver_Assignment_Iflows'
+            });
+
+            const {
+                p_start_time = "2026-09-01T07:00:00Z",
+                p_end_time = "2026-09-30T13:00:00Z",
+                p_dc = "0017411710",
+                p_carrier = "0001000109"
+            } = req.data;
+
+            try {
+
+                let iflowUrl = "";
+                iflowUrl = "/http/fo-bulk";
+
+                // console.log("My Destination: V1", JSON.stringify(destination));
+                // console.log("My iFlow URL: V1", iflowUrl);
+
+
+                const requestConfig = {
+                    method: "GET",
+                    url: iflowUrl,
+                    params: {
+                        p_start_time: p_start_time,
+                        p_end_time: p_end_time,
+                        p_dc: p_dc,
+                        p_carrier: p_carrier
+                    }
+                };
+
+                console.log("My Request Config V1:", JSON.stringify(requestConfig, null, 2));
+
+
+                const response = await executeHttpRequest(destination, requestConfig);
+
+                // console.log("My Status v1:", response.status);
+                // console.log("My Headers v1:", response.headers);
+                // console.log("My Data v1:", JSON.stringify(response.data.freightOrders, null, 2));             
+
+
+                const freightOrdersData = response.data.freightOrders;
+                console.log("My Final Parsed Data v1:", freightOrdersData);
+                console.log("Records Found:", freightOrdersData.length);
+
+                const freightOrders = freightOrdersData.map(item => ({
+
+                    id: item.transportationOrder || "N/A",
+
+                    startDate: item.startTime ? item.startTime.split("T")[0] : "",
+
+                    startTime: item.startTime ? item.startTime.split("T")[1]?.replace("Z", "") : "",
+
+                    endDate: item.endTime ? item.endTime.split("T")[0] : "",
+
+                    endTime: item.endTime ? item.endTime.split("T")[1]?.replace("Z", "") : "",
+
+                    driver_id: item.hasOwnProperty("driver_id") ? item.driver_id : "UNASSIGNED",
+
+                    vehid: item.hasOwnProperty("veh_regno") ? item.veh_regno : "NO_VEHICLE",
+
+                    status: item.hasOwnProperty("status") ? item.status : "Unassigned",
+
+                    carrier: item.hasOwnProperty("carrier") ? item.carrier : "UNKNOWN",
+
+                    distance: item.hasOwnProperty("distance") ? item.distance : "10",
+
+                    priority: item.hasOwnProperty("priority") ? item.priority : "MEDIUM",
+
+                    mode: item.hasOwnProperty("mode") ? item.mode : "ROAD",
+
+                    weight: item.hasOwnProperty("weight") ? item.weight : "10",
+
+                    from: item.hasOwnProperty("from") ? item.from : "UNKNOWN",
+
+                    to: item.hasOwnProperty("to") ? item.to : "UNKNOWN"
+
+                })) || [];
+
+                console.log("My freightOrders data:", freightOrders);
+
+                let DispatchedData = [];
+
+                for (const d of freightOrders || []) {
+
+                    DispatchedData.push({
+                        id: d.id,
+                        priority: d.priority,
+                        driver_id: d.driver_id,
+                        startDate: d.startDate,
+                        endDate: d.endDate,
+                        startTime: d.startTime,
+                        endTime: d.endTime,
+                        Vehid: d.vehid,
+                        carrier: d.carrier
+                        // LastUpdate: new Date().toISOString()
+                    });
+                }               
+
+                // DispatchedData = freightOrders.map(d => ({
+                //     id: d.id,
+                //     priority: d.priority,
+                //     driver_id: d.driver_id,
+                //     startDate: d.startDate,
+                //     endDate: d.endDate,
+                //     startTime: d.startTime,
+                //     endTime: d.endTime,
+                //     Vehid: d.vehid,
+                //     carrier: d.carrier
+                // }));
+                
+
+                return DispatchedData;
+                
+
+            } catch (error) {
+
+                console.error("Error Message V1: ", error.message);
+                console.error("Error Response V1:", error.response?.data);
+                console.error("Error Status V1:", error.response?.status);
+                console.error("Full Error V1:", error);
+
+                req.error(
+                    500,
+                    `Error v1 calling CPI iFlow: ${error.message}`
+                );
+            }
+        });
+
+        this.on("GetBulkfoV1", async (req) => {
+
+            const {
+                p_start_time = "2026-09-01T07:00:00Z",
+                p_end_time = "2026-09-01T13:00:00Z",
+                p_dc = "0017411710",
+                p_carrier = "0001000109"
+            } = req.data;
+
+            try {
+
+                let iflowUrl = "";
+                iflowUrl = "/http/fo-bulk";
+                console.log("My iFlow URL: V2", iflowUrl);
+                const response = await executeHttpRequest(
+                    { destinationName: 'Destination_Driver_Assignment_Iflows' },
+                    {
+                        method: "GET",
+                        url: iflowUrl,
+                        params: {
+                            p_start_time: p_start_time,
+                            p_end_time: p_end_time,
+                            p_dc: p_dc,
+                            p_carrier: p_carrier
+                        }
+                    }
+                );
+                console.log("My Status:", response.status);
+                console.log("My Headers:", response.headers);
+                console.log("My Data:", JSON.stringify(response.data, null, 2));
+                return JSON.stringify(response.data);
+
+            } catch (error) {
+
+                console.error("My Error Message V2:", error.message);
+                console.error("My Error Response V2:", error.response?.data);
+                console.error("My Error Status V2:", error.response?.status);
+                console.error("Full My Error V2:", error);
+
+                req.error(
+                    500,
+                    `My Error V2 calling CPI iFlow: ${error.message}`
+                );
+            }
+
+
+        });
+
+
+        this.on("GetRes", async (req) => {
+            try {
+                let destination = {
+                    destinationName: "Destination_Driver_Assignment_Iflows"
+                };
+                let iflowUrl = "";
+                iflowUrl = "/http/res";
+                const response = await executeHttpRequest(
+                    destination,
+                    {
+                        method: "GET",
+                        url: iflowUrl
+                    }
+                );
+
+                console.log("My Status:", response.status);
+                console.log("My Headers:", response.headers);
+                console.log("My Data:", JSON.stringify(response.data, null, 2));
+
+                const vehiclesData = response.data;
+                console.log("My Final Parsed Data v1:", vehiclesData);
+                return vehiclesData;
+            }
+            catch (error) {
+
+                console.error("My Error Message V2:", error.message);
+                console.error("My Error Response V2:", error.response?.data);
+                console.error("My Error Status V2:", error.response?.status);
+                console.error("Full My Error V2:", error);
+
+                req.error(
+                    500,
+                    `Error calling CPI iFlow: ${error.message}`
+                );
+            }
+        });
+
+        this.on("GetDrv", async (req) => {
+
+            try {
+                let destination = {
+                    destinationName: "Destination_Driver_Assignment_Iflows"
+                };
+
+                let iflowUrl = "";
+                iflowUrl = "/http/drv";
+
+                const response = await executeHttpRequest(
+                    destination,
+                    {
+                        method: "GET",
+                        url: iflowUrl
+                    }
+                );
+
+                console.log("My Status:", response.status);
+                console.log("My Headers:", response.headers);
+                console.log("My Data:", JSON.stringify(response.data, null, 2));
+
+                const driversData = response.data;
+                console.log("My Final Parsed Data v1:", driversData);
+
+
+
+                return driversData;
+
+
+                //return JSON.stringify(response.data);
+
+
+            }
+            catch (error) {
+                console.error("My Error Message V2:", error.message);
+                console.error("My Error Response V2:", error.response?.data);
+                console.error("My Error Status V2:", error.response?.status);
+                console.error("Full My Error V2:", error);
+                req.error(
+                    500,
+                    `Error calling CPI iFlow: ${error.message}`
+                );
+            }
+        });
+
+
+
         // this.on("assignments", async (req) => {
         //     const { driverId } = req.data;
         //     const freightOrders = GetFreightOrders();
@@ -45,11 +450,11 @@ class DispatcherService extends cds.ApplicationService {
         //     return vehicleAssignments;
         // });
 
-        
+
         // this.on("vehicleAssignments", Association("VehicleAssignments").to("FreightOrder").to("d").via("vehicleId"));
         // this.on("assignments", Association("DriverAssignments").to("FreightOrder").via("driverId"));
 
-        
+
         // this.on("GetFreightOrderDetails", GetFreightOrderDetails);
         // this.on("GetVehicleAssignmentsDetails", GetVehicleAssignmentsDetails);
         // this.on("GetDriverAssignmentsDetails", GetDriverAssignmentsDetails);
@@ -100,7 +505,7 @@ class DispatcherService extends cds.ApplicationService {
             ]
 
         }
-       
+
 
         function GetVehicleAssignmentsDetails() {
             return [
@@ -130,6 +535,6 @@ class DispatcherService extends cds.ApplicationService {
 
 
     }
-}
+};
 
-export default DispatcherService
+module.exports = DispatcherService;

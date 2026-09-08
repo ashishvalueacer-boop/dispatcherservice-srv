@@ -2,12 +2,14 @@
   "name": "DispatcherService",
   "version": "1.0.0",
   "dependencies": {
+    "@sap-cloud-sdk/connectivity": "^4.9.1",
+    "@sap-cloud-sdk/http-client": "^4.9.1",
     "@sap/cds": "^10",
     "@sap/xssec": "^4.15.0",
     "cors": "^2.8.6"
   },
   "devDependencies": {
-    "@sap/cds-dk": "^10"
+    "@sap/cds-dk": "^9.9.4"
   },
   "scripts": {
     "start": "cds-serve",
@@ -18,7 +20,8 @@
     "requires": {
       "[production]": {
         "auth": "mocked"
-      }
+      },
+      "destinations": true
     }
   }
 }

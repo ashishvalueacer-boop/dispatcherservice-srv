@@ -1,6 +1,6 @@
 _schema-version: 3.3.0
 ID: DispatcherService
-version: 1.0.0
+version: 0.0.4
 description: "Dispatcher service for handling dispatch operations."
 parameters:
   enable-parallel-deployments: true
@@ -17,7 +17,7 @@ modules:
     path: gen/srv
     parameters:
       instances: 1
-      buildpack: nodejs_buildpack
+      buildpack: nodejs_buildpack     
     build-parameters:
       builder: npm-ci
     provides:
@@ -26,15 +26,7 @@ modules:
           srv-url: ${default-url}
     requires:
       - name: DispatcherService-auth
-      # - name: DispatcherService-db
-  # - name: DispatcherService-db-deployer
-  #   type: hdb
-  #   path: gen/db
-  #   parameters:
-  #     buildpack: nodejs_buildpack
-  #   requires:
-  #     - name: DispatcherService-db
-
+      - name: Destination_Driver_Assignment_destination
 resources:
   - name: DispatcherService-auth
     type: org.cloudfoundry.managed-service
@@ -43,14 +35,14 @@ resources:
       service-plan: application
       path: ./xs-security.json
       config:
-        xsappname: DispatcherService-${org}-${space}
+        xsappname: DispatcherService_v1
         tenant-mode: dedicated
         oauth2-configuration:
           credential-types:
             - "binding-secret"
             - "x509"
-  # - name: DispatcherService-db
-  #   type: com.sap.xs.hdi-container
-  #   parameters:
-  #     service: hana
-  #     service-plan: hdi-shared
+  - name: Destination_Driver_Assignment_destination
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: destination
+      service-plan: lite

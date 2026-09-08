@@ -21,12 +21,17 @@ service DispatcherService {
 
 
     type FreightOrder {
-        id     : String;
-        froms  : String;
-        tos    : String;
-        start  : Decimal(5, 2);
-        end    : Decimal(5, 2);
-        status : String;
+        id       : String;
+        fromS    : String;
+        toS      : String;
+        start    : Decimal(5, 2);
+        end      : Decimal(5, 2);
+        status   : String;
+        carrier  : String;
+        distance : String;
+        priority : String;
+        mode     : String;
+        weight   : String;
     }
 
     type assignment {
@@ -37,11 +42,11 @@ service DispatcherService {
     }
 
     type VehAssignment {
-        vehid      : String;
-        driverId  : String;       
-        foId    : String;
-        start   : Decimal(5, 2);
-        end     : Decimal(5, 2);
+        vehid    : String;
+        driverId : String;
+        foId     : String;
+        start    : Decimal(5, 2);
+        end      : Decimal(5, 2);
     }
 
 
@@ -55,6 +60,25 @@ service DispatcherService {
     function GetFreightOrderDetailsByDriver(driverId: String) returns many FreightOrder;
     function GetVehicleAssignmentsDetails(vehicleId: String)  returns many FreightOrder;
     function GetDriverAssignmentsDetails(driverId: String)    returns many FreightOrder;
+
+    function GetBulkfo(p_start_time: DateTime,
+                       p_end_time: DateTime,
+                       p_dc: Int16,
+                       p_carrier: Int16)                      returns array of FreightOrder;
+
+    function GetBulkfoV(p_start_time: DateTime,
+                       p_end_time: DateTime,
+                       p_dc: Int16,
+                       p_carrier: Int16)                      returns many FreightOrder;
+
+    function GetBulkfoV1(p_start_time: DateTime,
+                         p_end_time: DateTime,
+                         p_dc: Int16,
+                         p_carrier: Int16)                    returns array of FreightOrder;
+
+    function GetRes()                                         returns array of Driver;
+
+    function GetDrv()                                         returns array of Driver;
 
 
 }

@@ -8,9 +8,9 @@ class DispatcherService extends cds.ApplicationService {
 
     async init() {
 
-        // let destination = await getDestination({
-        //     destinationName: 'Destination_Driver_Assignment_Iflows'
-        // });
+        let destination = await getDestination({
+            destinationName: 'Destination_Driver_Assignment_Iflows'
+        });
 
         // this.on("getAllTables", async (req) => {
         //     const db = await cds.connect.to("db");
@@ -33,25 +33,74 @@ class DispatcherService extends cds.ApplicationService {
         this.on("VehicleAssignments", GetVehicleAssignmentsDetails);
         this.on("assignments", GetDriverAssignmentsDetails);
 
-        this.on("GetFreightOrderDetails", async (req) => {
-            const { foId } = req.data;
-            const freightOrders = GetFreightOrders();
-            const orderDetails = freightOrders.find(order => order.id === foId);
-            return orderDetails ? [orderDetails] : [];
-        });
+        // this.on("GetFreightOrderDetails", async (req) => {
+        //     const { foId } = req.data;
+        //     const freightOrders = GetFreightOrders();
+        //     const orderDetails = freightOrders.find(order => order.id === foId);
+        //     return orderDetails ? [orderDetails] : [];
+        // });
 
-        
+        // this.on("GetBulkfoV1", async (req) => {
+
+        //     const {
+        //         p_start_time = "2026-09-01T07:00:00Z",
+        //         p_end_time = "2026-09-01T13:00:00Z",
+        //         p_dc = "0017411710",
+        //         p_carrier = "0001000109"
+        //     } = req.data;
+
+        //     try {
+
+        //         let i_flowUrl = "";
+        //         i_flowUrl = "/http/fo-bulk";
+
+        //         const response = await executeHttpRequest(
+        //             { destinationName: 'Destination_Driver_Assignment_Iflows' },
+        //             {
+        //                 method: "GET",
+        //                 url: i_flowUrl,
+        //                 params: {
+        //                     p_start_time: p_start_time,
+        //                     p_end_time: p_end_time,
+        //                     p_dc: p_dc,
+        //                     p_carrier: p_carrier
+        //                 }
+        //             }
+        //         );
+        //         console.log("My Status:", response.status);
+        //         console.log("My Headers:", response.headers);
+        //         console.log("My Data:", JSON.stringify(response.data.freightOrders, null, 2));
+        //         return JSON.stringify(response.data.freightOrders);
+
+        //     } catch (error) {
+
+        //         console.error("My Error Message V2:", error.message);
+        //         console.error("My Error Response V2:", error.response?.data);
+        //         console.error("My Error Status V2:", error.response?.status);
+        //         console.error("Full My Error V2:", error);
+
+        //         req.error(
+        //             500,
+        //             `My Error V2 calling CPI iFlow: ${error.message}`
+        //         );
+        //     }
+
+
+        // });
+
         this.on("GetBulkfo", async (req) => {
 
             let destination = await getDestination({
                 destinationName: 'Destination_Driver_Assignment_Iflows'
             });
-
+           
             const {
-                p_start_time = "2026-09-01T07:00:00Z",
-                p_end_time = "2026-09-30T13:00:00Z",
-                p_dc = "0017411710"
+                p_start_time,
+                p_end_time,
+                p_dc
             } = req.data;
+
+            console.log("req.data:", req.data);
 
             try {
 
@@ -68,7 +117,7 @@ class DispatcherService extends cds.ApplicationService {
                     params: {
                         p_start_time: p_start_time,
                         p_end_time: p_end_time,
-                        p_dc: p_dc
+                        p_dc: p_dc 
                     }
                 };
 
@@ -80,8 +129,8 @@ class DispatcherService extends cds.ApplicationService {
                 // console.log("My Headers v1:", response.headers);
                 // console.log("My Data v1:", JSON.stringify(response.data.freightOrders, null, 2));             
 
-
-                const freightOrdersData = response.data.freightOrders;
+                let freightOrdersData = []
+                freightOrdersData = response.data.freightOrders;
                 console.log("My Final Parsed Data v1:", freightOrdersData);
                 console.log("Records Found:", freightOrdersData.length);
 
@@ -90,12 +139,21 @@ class DispatcherService extends cds.ApplicationService {
 
                     id: item.transportationOrder || "N/A",
 
-                    // startTime: new Date(item.startTime.replace(/:/g, "")),
-                    // endTime: new Date(item.endTime.replace(/:/g, "")),
+                    transportationOrderUUID: item.hasOwnProperty("transportationOrderUUID") ? item.transportationOrderUUID : "0",
 
-                    startTime: item.startTime.replace(/:/g, ""),
-                    endTime: item.endTime.replace(/:/g, ""),
-                    
+                    carrier: item.hasOwnProperty("carrier") ? item.carrier : "UNKNOWN",
+
+                    executionStatus: item.hasOwnProperty("executionStatus") ? item.executionStatus : "0",
+
+                    executionStatusDescription: item.hasOwnProperty("executionStatusDescription") ? item.executionStatusDescription : "UNKNOWN",
+
+                    //startTime: item.startTime.replace(/:/g, ""),
+
+                    //endTime: item.endTime.replace(/:/g, ""),                  
+
+                    startTime: item.startTime,
+
+                    endTime: item.endTime,
 
                     // startDate: item.startTime ? item.startTime.split("T")[0] : "",
 
@@ -111,21 +169,21 @@ class DispatcherService extends cds.ApplicationService {
 
                     status: item.hasOwnProperty("status") ? item.status : "Unassigned",
 
-                    carrier: item.hasOwnProperty("carrier") ? item.carrier : "UNKNOWN",
-
                     sourceLocation: item.hasOwnProperty("sourceLocation") ? item.sourceLocation : "UNKNOWN",
 
                     veh_regno: item.hasOwnProperty("veh_regno") ? item.veh_regno : "UNKNOWN",
 
                     p_dc: item.hasOwnProperty("p_dc") ? item.p_dc : "UNKNOWN",
 
-                    // weight: item.hasOwnProperty("weight") ? item.weight : "10",
-
-                    // from: item.hasOwnProperty("from") ? item.from : "UNKNOWN",
-
-                    // to: item.hasOwnProperty("to") ? item.to : "UNKNOWN"
+                    restBreaks: (item.restBreaks || []).map(rb => ({
+                        rest_startTime: rb.startTime,
+                        rest_endTime: rb.endTime,
+                        restType: rb.restType
+                    }))
 
                 })) || [];
+
+
 
                 console.log("My freightOrders data:", freightOrders);
 
@@ -135,17 +193,19 @@ class DispatcherService extends cds.ApplicationService {
 
                     DispatchedData.push({
                         id: d.id,
+                        transportationOrderUUID: d.transportationOrderUUID,
+                        carrier: d.carrier,
+                        executionStatus: d.executionStatus,
+                        executionStatusDescription: d.executionStatusDescription,
                         priority: d.priority,
                         driver_id: d.driver_id,
-                        // startDate: d.startDate,
-                        // endDate: d.endDate,
-                        startTime: d.startTime,
-				        endTime: d.endTime,                        
+                        Departure_Time: d.startTime,
+                        Arrival_Time: d.endTime,
                         Veh_id: d.veh_id,
-                        carrier: d.carrier,
                         sourceLocation: d.sourceLocation,
                         veh_regno: d.veh_regno,
                         p_dc: d.p_dc,
+                        restBreaks: d.restBreaks || [],
                         LastUpdate: new Date().toISOString()
                     });
                 }
@@ -165,56 +225,6 @@ class DispatcherService extends cds.ApplicationService {
             }
         });
 
-
-        this.on("GetBulkfoV1", async (req) => {
-
-            const {
-                p_start_time = "2026-09-01T07:00:00Z",
-                p_end_time = "2026-09-01T13:00:00Z",
-                p_dc = "0017411710",
-                p_carrier = "0001000109"
-            } = req.data;
-
-            try {
-
-                let i_flowUrl = "";
-                i_flowUrl = "/http/fo-bulk";
-
-                const response = await executeHttpRequest(
-                    { destinationName: 'Destination_Driver_Assignment_Iflows' },
-                    {
-                        method: "GET",
-                        url: i_flowUrl,
-                        params: {
-                            p_start_time: p_start_time,
-                            p_end_time: p_end_time,
-                            p_dc: p_dc,
-                            p_carrier: p_carrier
-                        }
-                    }
-                );
-                console.log("My Status:", response.status);
-                console.log("My Headers:", response.headers);
-                console.log("My Data:", JSON.stringify(response.data.freightOrders, null, 2));
-                return JSON.stringify(response.data.freightOrders);
-
-            } catch (error) {
-
-                console.error("My Error Message V2:", error.message);
-                console.error("My Error Response V2:", error.response?.data);
-                console.error("My Error Status V2:", error.response?.status);
-                console.error("Full My Error V2:", error);
-
-                req.error(
-                    500,
-                    `My Error V2 calling CPI iFlow: ${error.message}`
-                );
-            }
-
-
-        });
-
-
         this.on("GetRes", async (req) => {
             try {
                 let destination = {
@@ -222,10 +232,11 @@ class DispatcherService extends cds.ApplicationService {
                 };
 
                 const {
-                    p_start_time = "2026-08-31T07:00:00Z",
-                    p_end_time = "2026-09-02T13:00:00Z",
-                    p_dc = "0017411710"
+                    p_start_time,
+                    p_end_time,
+                    p_dc
                 } = req.data;
+              
 
                 let i_flowUrl = "";
 
@@ -238,7 +249,7 @@ class DispatcherService extends cds.ApplicationService {
                         params: {
                             p_start_time: p_start_time,
                             p_end_time: p_end_time,
-                            p_dc: p_dc
+                            p_dc: p_dc 
                         }
                     }
                 );
@@ -273,10 +284,10 @@ class DispatcherService extends cds.ApplicationService {
                 };
 
                 const {
-                    p_start_time = "2026-08-31T07:00:00Z",
-                    p_end_time = "2026-09-02T13:00:00Z",
-                    p_dc = "0017411710"
-                } = req.data;
+                    p_start_time,
+                    p_end_time,
+                    p_dc
+                } = req.data;              
 
 
                 let iflowUrl = "";
@@ -299,14 +310,10 @@ class DispatcherService extends cds.ApplicationService {
                 console.log("My Status:", response.status);
                 console.log("My Headers:", response.headers);
                 console.log("My Data:", JSON.stringify(response.data.drivers, null, 2));
-
                 const driversData = response.data.drivers;
                 console.log("My Final Parsed Data v1:", driversData);
 
                 return driversData;
-
-
-
 
             }
             catch (error) {
@@ -320,6 +327,154 @@ class DispatcherService extends cds.ApplicationService {
                 );
             }
         });
+
+        this.on("GetFOSimilution", async (req) => {
+            try {
+
+                let destination = await getDestination({
+                    destinationName: 'Destination_Driver_Assignment_Iflows'
+                });
+
+                const {
+                    IvTorKey,
+                    IvNewDepartureDatetime
+                } = req.data;
+
+                console.log("req.data:", req.data);
+
+                if (!IvTorKey || !IvNewDepartureDatetime) {
+                    req.error(400, "IvTorKey and IvNewDepartureDatetime are required");
+                }
+
+
+                let iflowUrl = "";
+                iflowUrl = "/http/api/fo-scheduling-simulate";
+
+
+                const response = await executeHttpRequest(
+                    destination,
+                    {
+                        method: "GET",
+                        url: iflowUrl,
+                        params: {
+                            IvTorKey: IvTorKey,
+                            IvNewDepartureDatetime: IvNewDepartureDatetime
+                        }
+                    }
+                );
+                console.log("My Status:", response.status);
+                console.log("My Headers:", response.headers);
+                console.log("My Data:", JSON.stringify(response.data, null, 2));
+
+                const simulationData = response.data;
+                console.log("My Final Parsed Data v1:", simulationData);
+
+                return simulationData;
+
+            }
+            catch (error) {
+                console.error("My Error Message V2:", error.message);
+                console.error("My Error Response V2:", error.response?.data);
+                console.error("My Error Status V2:", error.response?.status);
+                console.error("Full My Error V2:", error);
+                req.error(500, `Error calling CPI iFlow: ${error.message}`
+                );
+            }
+        });
+
+        // this.on("GetFOSimilutionV1", async (req) => {
+        //     try {
+        //         let destination = await getDestination({
+        //             destinationName: 'Destination_Driver_Assignment_Iflows'
+        //         });
+
+        //         const {
+        //             p_IvNewDepartureDatetime = "20260918071635",
+        //             p_IvTorKey = "0EC00CBF7F5D1FD1ABA1CBAFA257C000"
+        //         } = req.data;
+
+        //         let iflowUrl = "";
+        //         iflowUrl = "/http/api/fo-scheduling-simulate";
+
+        //         const response = await executeHttpRequest(
+        //             destination,
+        //             {
+        //                 method: "GET",
+        //                 url: iflowUrl,
+        //                 params: {
+        //                     IvTorKey: p_IvTorKey,
+        //                     IvNewDepartureDatetime: p_IvNewDepartureDatetime,
+        //                 }
+        //             }
+        //         );
+        //         console.log("My Status:", response.status);
+        //         console.log("My Headers:", response.headers);
+        //         console.log("My Data:", JSON.stringify(response.data, null, 2));
+
+        //         const simulationData = response.data;
+        //         console.log("My Final Parsed Data v1:", simulationData);
+
+        //         return simulationData;
+
+        //     }
+        //     catch (error) {
+        //         console.error("My Error Message V2:", error.message);
+        //         console.error("My Error Response V2:", error.response?.data);
+        //         console.error("My Error Status V2:", error.response?.status);
+        //         console.error("Full My Error V2:", error);
+        //         req.error(500, `Error calling CPI iFlow: ${error.message}`
+        //         );
+        //     }
+        // });
+
+        // this.on("GetFOSimilutionV2", async (req) => {
+        //     try {
+
+        //         let destination = await getDestination({
+        //             destinationName: 'Destination_Driver_Assignment_Iflows'
+        //         });
+
+        //         const {
+        //             p_IvNewDepartureDatetime = '20260922044441',
+        //             p_IvTorKey = '0EC00CBF7F5D1FD1ACE3AC675F618000'
+        //         } = req.data;
+
+        //         let iflowUrl = "";
+        //         iflowUrl = "/http/api/fo-scheduling-simulate";
+
+        //         const response = await executeHttpRequest(
+        //             destination,
+        //             {
+        //                 method: "GET",
+        //                 url: iflowUrl,
+        //                 params: {
+        //                     IvTorKey: p_IvTorKey,
+        //                     IvNewDepartureDatetime: p_IvNewDepartureDatetime,
+        //                 }
+        //             }
+        //         );
+        //         console.log("My Status:", response.status);
+        //         console.log("My Headers:", response.headers);
+        //         console.log("My Data:", JSON.stringify(response.data, null, 2));
+
+        //         const simulationData = response.data;
+        //         console.log("My Final Parsed Data v1:", simulationData);
+
+        //         return simulationData;
+
+        //     }
+        //     catch (error) {
+        //         console.error("My Error Message V2:", error.message);
+        //         console.error("My Error Response V2:", error.response?.data);
+        //         console.error("My Error Status V2:", error.response?.status);
+        //         console.error("Full My Error V2:", error);
+        //         req.error(500, `Error calling CPI iFlow: ${error.message}`
+        //         );
+        //     }
+        // });
+
+
+
 
 
 

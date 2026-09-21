@@ -1,6 +1,11 @@
 _schema-version: 3.3.0
 ID: DispatcherService
-version: 0.0.4
+version: 0.0.9
+# Version 0.0.9 (21 September 26) - Added Parameter for GetDrv and GetRes and GetBuilkInfo - StartTime and EndTime and DC
+# Version 0.0.8 (21 September 26) - Added Parameter for GetDrv and GetRes - StartTime and EndTime
+# Version 0.0.7 (21 September 26) - Added destination for GetFOSimilution to Resolve issue of Internal Server error. 
+# Version 0.0.6 (17 September 26) - Added function for GetFOSimilution
+# Version 0.0.5 - Removed Parameter for Start Date and End Date
 description: "Dispatcher service for handling dispatch operations."
 parameters:
   enable-parallel-deployments: true

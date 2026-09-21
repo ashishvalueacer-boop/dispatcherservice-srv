@@ -3,6 +3,7 @@ const cors = require("cors");
 
 const allowedOrigins = [
     "http://localhost:8080",
+    "http://localhost:8081",
     "https://valueacer-dev-d92qqwq9.launchpad.cfapps.eu10.hana.ondemand.com",
     "https://7a89bf9atrial-dev-dispatcherservice-srv.cfapps.us10-001.hana.ondemand.com"
 ];

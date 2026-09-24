@@ -27,11 +27,11 @@ class DispatcherService extends cds.ApplicationService {
         // });
 
 
-        this.on("GetDrivers", GetDrivers);
-        this.on("GetVehicles", GetVehicles);
-        this.on("GetFreightOrders", GetFreightOrders);
-        this.on("VehicleAssignments", GetVehicleAssignmentsDetails);
-        this.on("assignments", GetDriverAssignmentsDetails);
+        // this.on("GetDrivers", GetDrivers);
+        // this.on("GetVehicles", GetVehicles);
+        // this.on("GetFreightOrders", GetFreightOrders);
+        // this.on("VehicleAssignments", GetVehicleAssignmentsDetails);
+        // this.on("assignments", GetDriverAssignmentsDetails);
 
         // this.on("GetFreightOrderDetails", async (req) => {
         //     const { foId } = req.data;
@@ -93,7 +93,7 @@ class DispatcherService extends cds.ApplicationService {
             let destination = await getDestination({
                 destinationName: 'Destination_Driver_Assignment_Iflows'
             });
-           
+
             const {
                 p_start_time,
                 p_end_time,
@@ -117,7 +117,7 @@ class DispatcherService extends cds.ApplicationService {
                     params: {
                         p_start_time: p_start_time,
                         p_end_time: p_end_time,
-                        p_dc: p_dc 
+                        p_dc: p_dc
                     }
                 };
 
@@ -236,7 +236,7 @@ class DispatcherService extends cds.ApplicationService {
                     p_end_time,
                     p_dc
                 } = req.data;
-              
+
 
                 let i_flowUrl = "";
 
@@ -249,7 +249,7 @@ class DispatcherService extends cds.ApplicationService {
                         params: {
                             p_start_time: p_start_time,
                             p_end_time: p_end_time,
-                            p_dc: p_dc 
+                            p_dc: p_dc
                         }
                     }
                 );
@@ -287,7 +287,7 @@ class DispatcherService extends cds.ApplicationService {
                     p_start_time,
                     p_end_time,
                     p_dc
-                } = req.data;              
+                } = req.data;
 
 
                 let iflowUrl = "";
@@ -380,6 +380,34 @@ class DispatcherService extends cds.ApplicationService {
                 req.error(500, `Error calling CPI iFlow: ${error.message}`
                 );
             }
+        });
+
+        this.on("SaveFOSAP", async (req) => {
+
+            let destination = await getDestination({
+                destinationName: 'Destination_Driver_Assignment_Iflows'
+            });
+            const { Updates } = req.data;
+
+            let i_flowUrl = "";
+            i_flowUrl = "/http/api/fo-update";
+
+            // for (const fo of FreightOrders) {
+                await executeHttpRequest(
+                    destination,
+                    {
+                        method: "POST",
+                        url: i_flowUrl,
+                        data: Updates
+                    }
+                );
+            //}
+
+            return {
+                success: true,
+                message: "Freight Order saved successfully"
+            };
+
         });
 
         // this.on("GetFOSimilutionV1", async (req) => {

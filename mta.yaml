@@ -1,6 +1,7 @@
 _schema-version: 3.3.0
 ID: DispatcherService
-version: 0.0.9
+version: 0.1.0
+# Version 0.1.0 (24 September 26) - Added functionality to save simulated Freight Order updates through a new service.Created a function SaveFOSAP
 # Version 0.0.9 (21 September 26) - Added Parameter for GetDrv and GetRes and GetBuilkInfo - StartTime and EndTime and DC
 # Version 0.0.8 (21 September 26) - Added Parameter for GetDrv and GetRes - StartTime and EndTime
 # Version 0.0.7 (21 September 26) - Added destination for GetFOSimilution to Resolve issue of Internal Server error. 

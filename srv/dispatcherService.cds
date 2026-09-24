@@ -104,6 +104,8 @@ service DispatcherService {
         timezone  : String(5);
     }
 
+    type FreightOrderInput {}
+
 
     entity DispatcherData {
 
@@ -129,43 +131,48 @@ service DispatcherService {
     }
 
 
-    function GetDrivers()                                      returns many Driver;
-    function GetVehicles()                                     returns many Vehicle;
-    function GetFreightOrders()                                returns many FreightOrder;
-    function assignments()                                     returns many assignment;
-    function VehicleAssignments()                              returns many VehAssignment;
+    // function GetDrivers()                                      returns many Driver;
+    // function GetVehicles()                                     returns many Vehicle;
+    // function GetFreightOrders()                                returns many FreightOrder;
+    // function assignments()                                     returns many assignment;
+    // function VehicleAssignments()                              returns many VehAssignment;
 
-    function GetFreightOrderDetails(orderId: String)           returns many FreightOrder;
-    function GetFreightOrderDetailsByDriver(driverId: String)  returns many FreightOrder;
-    function GetVehicleAssignmentsDetails(vehicleId: String)   returns many FreightOrder;
-    function GetDriverAssignmentsDetails(driverId: String)     returns many FreightOrder;
+    // function GetFreightOrderDetails(orderId: String)           returns many FreightOrder;
+    // function GetFreightOrderDetailsByDriver(driverId: String)  returns many FreightOrder;
+    // function GetVehicleAssignmentsDetails(vehicleId: String)   returns many FreightOrder;
+    // function GetDriverAssignmentsDetails(driverId: String)     returns many FreightOrder;
+
+    // function GetFOSimilutionV1(IvTorKey: String,
+    //                            IvNewDepartureDatetime: String) returns many FreightOrder;
+
+    // function GetFOSimilutionV2(IvTorKey: String,
+    //                            IvNewDepartureDatetime: String) returns many FreightOrder;
 
     function GetBulkfo(p_start_time: DateTime,
                        p_end_time: DateTime,
-                       p_dc: String)                           returns array of FreightOrder;
+                       p_dc: String)                         returns array of FreightOrder;
 
     function GetBulkfoV(p_start_time: DateTime,
                         p_end_time: DateTime,
                         p_dc: Int16,
-                        p_carrier: Int16)                      returns many FreightOrder;
+                        p_carrier: Int16)                    returns many FreightOrder;
 
 
     function GetRes(p_start_time: DateTime,
                     p_end_time: DateTime,
-                    p_dc: String)                              returns array of Resources;
+                    p_dc: String)                            returns array of Resources;
 
     function GetDrv(p_start_time: DateTime,
                     p_end_time: DateTime,
-                    p_dc: String)                              returns array of Drivers;
+                    p_dc: String)                            returns array of Drivers;
 
     function GetFOSimilution(IvTorKey: String,
-                             IvNewDepartureDatetime: String)   returns many FreightOrder;
+                             IvNewDepartureDatetime: String) returns many FreightOrder;
 
-    function GetFOSimilutionV1(IvTorKey: String,
-                               IvNewDepartureDatetime: String) returns many FreightOrder;
 
-    function GetFOSimilutionV2(IvTorKey: String,
-                               IvNewDepartureDatetime: String) returns many FreightOrder;
 
+
+    action SaveFOSAP(Updates : many FreightOrderInput
+    )    returns String;
 
 }
